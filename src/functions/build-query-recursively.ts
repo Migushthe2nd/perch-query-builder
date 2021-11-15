@@ -1,4 +1,4 @@
-import {GraphQLQueryTree, PAGINATE} from "../";
+import {GraphQLQueryTree, SELECT_ALWAYS} from "../";
 import {RelationMetadata} from "typeorm/metadata/RelationMetadata";
 import {EntityMetadata, SelectQueryBuilder} from "typeorm";
 import {ColumnMetadata} from "typeorm/metadata/ColumnMetadata";
@@ -33,10 +33,21 @@ export function buildQueryRecursively<T>(
     const primaryFields = metadata.primaryColumns
         .map((ref: ColumnMetadata) => alias + "." + ref.propertyPath)
 
+    // Fourthly, we check the special selectAlways decorator data and force select those columns
+    let selectAlwaysFields = [];
+    if (typeof metadata.target == "function") {
+        const configuredFields = Reflect.getMetadata(SELECT_ALWAYS, metadata.target.prototype) || [];
+        selectAlwaysFields = configuredFields
+            // only select fields that are actually columns
+            .filter((propertyName) => Object.keys(metadata.propertiesMap).includes(propertyName))
+            .map((propertyName) => alias + "." + propertyName)
+    }
+
     // We select all of above
     qb.addSelect(argFields);
     qb.addSelect(selectedFields);
-    qb.addSelect(primaryFields)
+    qb.addSelect(primaryFields);
+    qb.addSelect(selectAlwaysFields);
 
     // We add order options
     Object.keys(options.order)
