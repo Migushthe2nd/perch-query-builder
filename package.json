@@ -23,7 +23,7 @@
     "dependencies": {
         "@nestjs/graphql": "^7.0.0",
         "graphql": "^15.0.0",
-        "typeorm": "^0.2.25"
+        "typeorm": "^0.2.40"
     },
     "resolutions": {
         "@nestjs/graphql": "^7.0.0",
